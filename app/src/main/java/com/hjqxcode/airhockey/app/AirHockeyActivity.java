@@ -1,6 +1,7 @@
 package com.hjqxcode.airhockey.app;
 
 import android.opengl.GLSurfaceView;
+import android.os.Debug;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.Toast;
@@ -13,12 +14,13 @@ public class AirHockeyActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Debug.waitForDebugger();
         super.onCreate(savedInstanceState);
 
         if (Util.supportES20(this)) {
             mGLSurfaceView = new GLSurfaceView(this);
             mGLSurfaceView.setEGLContextClientVersion(2);
-            mGLSurfaceView.setRenderer(new AirHockeyRenderer());
+            mGLSurfaceView.setRenderer(new AirHockeyRenderer(this));
 
             setContentView(mGLSurfaceView);
         } else {
