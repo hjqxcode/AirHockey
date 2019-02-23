@@ -21,32 +21,33 @@ public class AirHockeyRenderer implements GLSurfaceView.Renderer {
 
     private static final int BYTES_PER_FLOAT = Float.SIZE / Byte.SIZE;
     private static final int POSITION_COMPONENT_COUNT = 2;
+    private static final int COLOR_COMPONENT_COUNT = 4;
+    private static final int STRIDE = (POSITION_COMPONENT_COUNT + COLOR_COMPONENT_COUNT) * BYTES_PER_FLOAT;
 
     private static final float[] AIRHOCKET_VERTICES = { // left bottom corner is original point
-            // triangle 1(counter-clockwise order/winding order)
-            -0.5f, -0.5f,
-            0.5f, 0.5f,
-            -0.5f, 0.5f,
-
-            // triangle 2
-            -0.5f, -0.5f,
-            0.5f, -0.5f,
-            0.5f, 0.5f,
+            // triangle fan(counter-clockwise order/winding order)
+            // X, Y, R, G, B, A
+            0f,     0f,      1.0f, 1.0f, 1.0f, 1.0f,
+            -0.5f, -0.5f, 0.7f, 0.7f, 0.7f, 1.0f,
+            0.5f,  -0.5f, 0.7f, 0.7f, 0.7f, 1.0f,
+            0.5f,   0.5f, 0.7f, 0.7f, 0.7f, 1.0f,
+            -0.5f,  0.5f, 0.7f, 0.7f, 0.7f, 1.0f,
+            -0.5f, -0.5f, 0.7f, 0.7f, 0.7f, 1.0f,
 
             // middle seperate line
-            -0.5f, 0f,
-            0.5f, 0f,
+            -0.5f,    0f, 1.0f,    0f,  0f, 1.0f,
+            0.5f,     0f, 1.0f,    0f,  0f, 1.0f,
 
             // mallets
-            0f, -0.25f,
-            0f, 0.25f,
+            0f, -0.25f,    0f, 0f, 1.0f, 1.0f,
+            0f,  0.25f, 1.0f, 0f, 0f, 1.0f
     };
 
     private int mProgram;
     private Context mContext;
     private FloatBuffer mVerticesBuffer;
     private AttributeShaderParameter aPositon;
-    private UniformShaderParameter uColor;
+    private AttributeShaderParameter aColor;
 
     public AirHockeyRenderer(Context context) {
         mContext = context.getApplicationContext();
@@ -68,13 +69,17 @@ public class AirHockeyRenderer implements GLSurfaceView.Renderer {
         mProgram = ShaderUtil.linkProgram(vertexId, fragmentId);
 
         aPositon = new AttributeShaderParameter("a_Position");
-        uColor = new UniformShaderParameter("u_Color");
+        aColor = new AttributeShaderParameter("a_Color");
         aPositon.loadHandle(mProgram);
-        uColor.loadHandle(mProgram);
+        aColor.loadHandle(mProgram);
 
         mVerticesBuffer.position(0);
         GLES20.glVertexAttribPointer(aPositon.handle, POSITION_COMPONENT_COUNT,
-                GLES20.GL_FLOAT, false, 0, mVerticesBuffer);
+                GLES20.GL_FLOAT, false, STRIDE, mVerticesBuffer);
+
+        mVerticesBuffer.position(POSITION_COMPONENT_COUNT);
+        GLES20.glVertexAttribPointer(aColor.handle, COLOR_COMPONENT_COUNT,
+                GLES20.GL_FLOAT, false, STRIDE, mVerticesBuffer);
 
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     }
@@ -91,23 +96,19 @@ public class AirHockeyRenderer implements GLSurfaceView.Renderer {
         ShaderUtil.checkError();
 
         GLES20.glEnableVertexAttribArray(aPositon.handle);
+        GLES20.glEnableVertexAttribArray(aColor.handle);
 
-        // draw white table
-        GLES20.glUniform4f(uColor.handle, 1.0f, 1.0f, 1.0f, 1.0f);
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 6);
+        // draw gradient table
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 6);
 
         // draw red middle seperate line
-        GLES20.glUniform4f(uColor.handle, 1.0f, 0.0f, 0.0f, 1.0f);
         GLES20.glDrawArrays(GLES20.GL_LINES, 6, 2);
 
-        // draw the first mallet blue
-        GLES20.glUniform4f(uColor.handle, 0.0f, 0.0f, 1.0f, 1.0f);
+        // draw two mallets blue
         GLES20.glDrawArrays(GLES20.GL_POINTS, 8, 1);
-
-        // draw the second mallet red
-        GLES20.glUniform4f(uColor.handle, 1.0f, 0.0f, 0.0f, 1.0f);
         GLES20.glDrawArrays(GLES20.GL_POINTS, 9, 1);
 
         GLES20.glDisableVertexAttribArray(aPositon.handle);
+        GLES20.glDisableVertexAttribArray(aColor.handle);
     }
 }
