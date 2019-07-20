@@ -76,6 +76,34 @@ public class ShaderUtil {
         }
     }
 
+    public static void printMatrix(float[] matrix) {
+        int length = matrix != null ? matrix.length : 0;
+        if (length != 16) {
+            Log.w(TAG, "printMatrix error matrix length: " + length);
+            return;
+        }
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("[");
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (j == 0) {
+                    if (i != 0) builder.append(" ");
+                }
+                builder.append(matrix[i * 4 + j]);
+
+                if (j != 3) {
+                    builder.append(", ");
+                } else if (i != 3) {
+                    builder.append("\n");
+                }
+            }
+        }
+        builder.append("]");
+        Log.d(TAG, "printMatrix:\n" + builder.toString());
+
+    }
+
     abstract static class ShaderParameter {
         public int handle;
         protected final String mName;

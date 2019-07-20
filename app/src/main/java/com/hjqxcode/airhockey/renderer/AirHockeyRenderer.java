@@ -3,6 +3,7 @@ package com.hjqxcode.airhockey.renderer;
 import android.content.Context;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
+import android.opengl.Matrix;
 
 import com.hjqxcode.airhockey.R;
 import com.hjqxcode.airhockey.util.ShaderUtil;
@@ -48,6 +49,9 @@ public class AirHockeyRenderer implements GLSurfaceView.Renderer {
     private FloatBuffer mVerticesBuffer;
     private AttributeShaderParameter aPositon;
     private AttributeShaderParameter aColor;
+    private UniformShaderParameter uMatrix;
+
+    private final float[] projectMatric = new float[16];
 
     public AirHockeyRenderer(Context context) {
         mContext = context.getApplicationContext();
@@ -65,8 +69,10 @@ public class AirHockeyRenderer implements GLSurfaceView.Renderer {
 
         aPositon = new AttributeShaderParameter("a_Position");
         aColor = new AttributeShaderParameter("a_Color");
+        uMatrix = new UniformShaderParameter("u_Matrix");
         aPositon.loadHandle(mProgram);
         aColor.loadHandle(mProgram);
+        uMatrix.loadHandle(mProgram);
 
         mVerticesBuffer = ByteBuffer.allocateDirect(AIRHOCKET_VERTICES.length * BYTES_PER_FLOAT)
                 .order(ByteOrder.nativeOrder())
@@ -86,11 +92,33 @@ public class AirHockeyRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onSurfaceChanged(GL10 gl, int width, int height) {
         GLES20.glViewport(0, 0, width, height);
+
+        final float[] identity = new float[16];
+        Matrix.setIdentityM(identity, 0);
+        ShaderUtil.printMatrix(identity);
+
+        // Computes an orthographic（正交） projection matrix
+        // orthoM(float[] m, int mOffset, float left, float right, float bottom, float top, float near, float far)
+        if (width < height) {
+            float aspectRatioH = (float) height / width;
+            Matrix.orthoM(projectMatric, 0, -1f, 1f, -aspectRatioH, aspectRatioH, -1f, 1f);
+        } else {
+            float aspectRatioW = (float) width / height;
+            Matrix.orthoM(projectMatric, 0, -aspectRatioW, aspectRatioW, -1f, 1f, -1f, 1f);
+        }
+        ShaderUtil.printMatrix(projectMatric);
+
+        // glUniformMatrix4fv(int location, int count, boolean transpose, float[] value, int offset)
+        // GLES20.glUniformMatrix4fv(uMatrix.handle, 1, false, projectMatric, 0);
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        
+        // glUniformMatrix4fv(int location, int count, boolean transpose, float[] value, int offset)
+        GLES20.glUniformMatrix4fv(uMatrix.handle, 1, false, projectMatric, 0);
+
         GLES20.glUseProgram(mProgram);
         ShaderUtil.checkError();
 
