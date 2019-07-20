@@ -27,7 +27,7 @@ public class AirHockeyRenderer implements GLSurfaceView.Renderer {
     private static final float[] AIRHOCKET_VERTICES = { // left bottom corner is original point
             // triangle fan(counter-clockwise order/winding order)
             // X, Y, R, G, B, A
-            0f,     0f,      1.0f, 1.0f, 1.0f, 1.0f,
+            0f,     0f,   1.0f, 1.0f, 1.0f, 1.0f,
             -0.5f, -0.5f, 0.7f, 0.7f, 0.7f, 1.0f,
             0.5f,  -0.5f, 0.7f, 0.7f, 0.7f, 1.0f,
             0.5f,   0.5f, 0.7f, 0.7f, 0.7f, 1.0f,
@@ -55,11 +55,6 @@ public class AirHockeyRenderer implements GLSurfaceView.Renderer {
 
     @Override
     public void onSurfaceCreated(GL10 gl, EGLConfig config) {
-        mVerticesBuffer = ByteBuffer.allocateDirect(AIRHOCKET_VERTICES.length * BYTES_PER_FLOAT)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer();
-        mVerticesBuffer.put(AIRHOCKET_VERTICES);
-
         String vertexSourceCode = ShaderUtil.readShaderSourceCode(mContext, R.raw.vertex_shader);
         int vertexId = ShaderUtil.compileShader(GLES20.GL_VERTEX_SHADER, vertexSourceCode);
 
@@ -73,6 +68,10 @@ public class AirHockeyRenderer implements GLSurfaceView.Renderer {
         aPositon.loadHandle(mProgram);
         aColor.loadHandle(mProgram);
 
+        mVerticesBuffer = ByteBuffer.allocateDirect(AIRHOCKET_VERTICES.length * BYTES_PER_FLOAT)
+                .order(ByteOrder.nativeOrder())
+                .asFloatBuffer();
+        mVerticesBuffer.put(AIRHOCKET_VERTICES);
         mVerticesBuffer.position(0);
         GLES20.glVertexAttribPointer(aPositon.handle, POSITION_COMPONENT_COUNT,
                 GLES20.GL_FLOAT, false, STRIDE, mVerticesBuffer);
