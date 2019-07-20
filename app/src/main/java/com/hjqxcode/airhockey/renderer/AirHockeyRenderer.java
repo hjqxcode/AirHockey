@@ -29,11 +29,11 @@ public class AirHockeyRenderer implements GLSurfaceView.Renderer {
             // triangle fan(counter-clockwise order/winding order)
             // X, Y, R, G, B, A
             0f,     0f,   1.0f, 1.0f, 1.0f, 1.0f,
-            -0.5f, -0.5f, 0.7f, 0.7f, 0.7f, 1.0f,
-            0.5f,  -0.5f, 0.7f, 0.7f, 0.7f, 1.0f,
-            0.5f,   0.5f, 0.7f, 0.7f, 0.7f, 1.0f,
-            -0.5f,  0.5f, 0.7f, 0.7f, 0.7f, 1.0f,
-            -0.5f, -0.5f, 0.7f, 0.7f, 0.7f, 1.0f,
+            -0.5f, -0.8f, 0.7f, 0.7f, 0.7f, 1.0f,
+            0.5f,  -0.8f, 0.7f, 0.7f, 0.7f, 1.0f,
+            0.5f,   0.8f, 0.7f, 0.7f, 0.7f, 1.0f,
+            -0.5f,  0.8f, 0.7f, 0.7f, 0.7f, 1.0f,
+            -0.5f, -0.8f, 0.7f, 0.7f, 0.7f, 1.0f,
 
             // middle seperate line
             -0.5f,    0f, 1.0f,    0f,  0f, 1.0f,
@@ -115,7 +115,7 @@ public class AirHockeyRenderer implements GLSurfaceView.Renderer {
     @Override
     public void onDrawFrame(GL10 gl) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        
+
         // glUniformMatrix4fv(int location, int count, boolean transpose, float[] value, int offset)
         GLES20.glUniformMatrix4fv(uMatrix.handle, 1, false, projectMatric, 0);
 
