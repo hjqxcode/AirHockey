@@ -76,7 +76,25 @@ public class ShaderUtil {
         }
     }
 
-    public static void printMatrix(float[] matrix) {
+    public static void printVec2Vec(String tag, float[] orig, float[] dest) {
+        if (orig == null || dest == null || orig.length != dest.length) return;
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("[");
+        for (int i = 0, size = orig.length; i < size; i++) {
+            builder.append(orig[i]);
+            if (i != size - 1) builder.append(", ");
+        }
+        builder.append("] --> [");
+        for (int i = 0, size = dest.length; i < size; i++) {
+            builder.append(dest[i]);
+            if (i != size - 1) builder.append(", ");
+        }
+        builder.append("]");
+        Log.d(TAG, "printVec2Vec: " + tag + "\n" + builder.toString());
+    }
+
+    public static void printMatrix(String tag, float[] matrix) {
         int length = matrix != null ? matrix.length : 0;
         if (length != 16) {
             Log.w(TAG, "printMatrix error matrix length: " + length);
@@ -90,7 +108,7 @@ public class ShaderUtil {
                 if (j == 0) {
                     if (i != 0) builder.append(" ");
                 }
-                builder.append(matrix[i * 4 + j]);
+                builder.append(matrix[i + j * 4]);
 
                 if (j != 3) {
                     builder.append(", ");
@@ -100,7 +118,7 @@ public class ShaderUtil {
             }
         }
         builder.append("]");
-        Log.d(TAG, "printMatrix:\n" + builder.toString());
+        Log.d(TAG, "printMatrix: " + tag + "\n" + builder.toString());
 
     }
 
