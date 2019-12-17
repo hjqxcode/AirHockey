@@ -9,6 +9,7 @@ import com.hjqxcode.airhockey.R;
 import com.hjqxcode.airhockey.util.ShaderUtil;
 import com.hjqxcode.airhockey.util.ShaderUtil.AttributeShaderParameter;
 import com.hjqxcode.airhockey.util.ShaderUtil.UniformShaderParameter;
+import com.hjqxcode.airhockey.util.Util;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -52,7 +53,10 @@ public class AirHockeyRenderer implements GLSurfaceView.Renderer {
     private AttributeShaderParameter aColor;
     private UniformShaderParameter uMatrix;
 
+    private final float[] modelMatric = new float[16];
+    private final float[] viewMatrix = new float[16];
     private final float[] projectMatric = new float[16];
+    private final float[] mvpMatrix = new float[16];
 
     public AirHockeyRenderer(Context context) {
         mContext = context.getApplicationContext();
@@ -136,16 +140,46 @@ public class AirHockeyRenderer implements GLSurfaceView.Renderer {
         }
         ShaderUtil.printMatrix(orthoMInfo, projectMatric);
 
-        // glUniformMatrix4fv(int location, int count, boolean transpose, float[] value, int offset)
-        // GLES20.glUniformMatrix4fv(uMatrix.handle, 1, false, projectMatric, 0);
+        // view matrix
+        Matrix.setIdentityM(viewMatrix, 0);
+        Matrix.setLookAtM(viewMatrix, 0, 0, 0f, 0.5f, 0, 0, 0, 0,1f, 0);
+        ShaderUtil.printMatrix("view", viewMatrix);
+    }
+
+    private int rotate = 0;
+    private void updateZRotate() {
+        rotate += 1;
+        if (rotate > 360) rotate = 0;
+
+        // Matrix.setIdentityM(modelMatric, 0);
+        Matrix.rotateM(modelMatric, 0, rotate, 0, 0, 1); // rotate by z axis
+        ShaderUtil.printMatrix("model", modelMatric);
+    }
+
+
+    private float currentTranslteX = 0;
+    private float xdelta = 0.01f;
+    private void updateTranslateX() {
+        currentTranslteX += xdelta;
+        if (currentTranslteX > 0.5f || currentTranslteX < -0.5f) {
+            xdelta = -xdelta;
+            currentTranslteX = Util.clamp(currentTranslteX, -0.5f, 0.5f);
+        }
+
+        Matrix.setIdentityM(modelMatric, 0);
+        Matrix.translateM(modelMatric, 0, currentTranslteX, 0, 0);
+        ShaderUtil.printMatrix("model", modelMatric);
     }
 
     @Override
     public void onDrawFrame(GL10 gl) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
 
+        updateTranslateX();
+        updateZRotate();
+
         // glUniformMatrix4fv(int location, int count, boolean transpose, float[] value, int offset)
-        GLES20.glUniformMatrix4fv(uMatrix.handle, 1, false, projectMatric, 0);
+        GLES20.glUniformMatrix4fv(uMatrix.handle, 1, false, getMVPMatrix(), 0);
 
         GLES20.glUseProgram(mProgram);
         ShaderUtil.checkError();
@@ -165,5 +199,16 @@ public class AirHockeyRenderer implements GLSurfaceView.Renderer {
 
         GLES20.glDisableVertexAttribArray(aPositon.handle);
         GLES20.glDisableVertexAttribArray(aColor.handle);
+    }
+
+    private float[] getMVPMatrix() {
+        /*Matrix.setIdentityM(modelMatric, 0);
+        Matrix.rotateM(modelMatric, 0, rotate, 1, 0, 0);*/
+
+        float[] mvMatrix = new float[16];
+        Matrix.multiplyMM(mvMatrix, 0, viewMatrix, 0, modelMatric, 0);
+        Matrix.multiplyMM(mvpMatrix, 0, projectMatric, 0, mvMatrix, 0);
+
+        return mvpMatrix;
     }
 }
